@@ -30,19 +30,22 @@ def main():
     DEST.mkdir(parents=True, exist_ok=True)
     HOOKS_DIR.mkdir(parents=True, exist_ok=True)
 
-    # Copy core scripts
-    for fname in ["agent-light.sh", "ble_gate.py", "cursor_light_ble_enhanced.py"]:
-        src = SRC / fname
-        if src.exists():
-            shutil.copy2(src, DEST / fname)
-            print(f"  -> {fname}")
+    same_dir = SRC.resolve() == DEST.resolve()
 
-    # Copy claude-code hook scripts
-    claude_src = SRC / "claude-code"
-    if claude_src.is_dir():
-        for f in claude_src.glob("*.sh"):
-            shutil.copy2(f, HOOKS_DIR / f.name)
-            print(f"  -> claude-code/{f.name}")
+    if same_dir:
+        print("  (source == target, skipping file copy)")
+    else:
+        for fname in ["agent-light.sh", "ble_gate.py", "cursor_light_ble_enhanced.py"]:
+            src = SRC / fname
+            if src.exists():
+                shutil.copy2(src, DEST / fname)
+                print(f"  -> {fname}")
+
+        claude_src = SRC / "claude-code"
+        if claude_src.is_dir():
+            for f in claude_src.glob("*.sh"):
+                shutil.copy2(f, HOOKS_DIR / f.name)
+                print(f"  -> claude-code/{f.name}")
 
     # Init state/log files
     (DEST / "ble.log").touch(exist_ok=True)
