@@ -59,13 +59,16 @@ py -3 cursor_light_ble_enhanced.py <mode>
 # Install for Cursor (from extracted bundle)
 bash install-cursor-light.sh
 
-# Install for Claude Code (from extracted bundle)
+# Install for Claude Code — macOS
 bash install-claude-code.sh
+
+# Install for Claude Code — Windows (PowerShell + Python)
+py -3 install-claude-code.py
 
 # Debug hook execution — Cursor (macOS)
 tail -f ~/.cursor/hooks/cursor-light/ble.log
 
-# Debug hook execution — Claude Code (macOS)
+# Debug hook execution — Claude Code (macOS / Windows Git Bash)
 tail -f ~/.cursor-light/ble.log
 
 # Debug hook execution — Windows PowerShell
@@ -80,8 +83,10 @@ The Arduino firmware (`.ino` file) is compiled and uploaded via Arduino IDE — 
 ## Platform notes
 
 - All hook scripts are **bash**. On Windows, run them via Git Bash (`.ps1` alternatives don't exist yet).
-- `ble_gate.py` uses **fcntl file locking** (`state.lock`) — Unix-only. State is persisted in `state.json` at the install path. If the light behaves erratically, deleting `state.json` and `state.lock` resets the debounce state.
+- **File locking**: `ble_gate.py` uses `msvcrt` on Windows and `fcntl` on macOS/Linux. `agent-light.sh` inline Python scripts (Cursor path only) still depend on `fcntl`; these are not called in the Claude Code path.
+- State is persisted in `state.json` at the install path (`~/.cursor-light/` for Claude Code, `~/.cursor/hooks/cursor-light/` for Cursor). If the light behaves erratically, deleting `state.json` and `state.lock` resets the debounce state.
 - macOS: if BLE fails with "Bluetooth device is turned off" despite BT being on, grant Bluetooth permission to Terminal/iTerm/Cursor in **System Settings → Privacy & Security → Bluetooth**.
+- **Windows settings.json paths**: Use forward slashes (`C:/Users/...`) for hook commands — Git Bash expects this format.
 - **Claude Code vs Cursor**: The Claude Code hook path uses a simplified state machine — no Plan/Build detection. All tool failures map to `error`. The Cursor path retains full Plan mode awareness (CreatePlan → alarm, Build → busy, etc.).
 
 ## Key files

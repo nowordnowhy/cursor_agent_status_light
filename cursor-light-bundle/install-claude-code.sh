@@ -52,54 +52,64 @@ else
   echo "BLE 测试未通过，请检查蓝牙权限与硬件（见 PDF 手册）。"
 fi
 
-# 生成 settings.json hook 配置指南
+# 生成 settings.json hook 配置
 echo ""
 echo "============================================"
-echo "  请将以下 hooks 配置合并到:"
-echo "  ${SETTINGS_JSON}"
-echo "  (项目级: .claude/settings.json)"
+echo "  Claude Code hooks 配置"
 echo "============================================"
 echo ""
-cat <<'EOF'
+
+HOOK_CONFIG=$(cat <<HOOKEOF
 {
   "hooks": {
     "UserPromptSubmit": [
       {
-        "command": "bash ~/.cursor-light/claude-code/hook-turn-start.sh",
+        "command": "bash ${DEST}/claude-code/hook-turn-start.sh",
         "matcher": ""
       }
     ],
     "beforeToolUse": [
       {
-        "command": "bash ~/.cursor-light/claude-code/hook-busy.sh",
+        "command": "bash ${DEST}/claude-code/hook-busy.sh",
         "matcher": ""
       },
       {
-        "command": "bash ~/.cursor-light/claude-code/hook-await-user.sh",
+        "command": "bash ${DEST}/claude-code/hook-await-user.sh",
         "matcher": "AskUserQuestion"
       }
     ],
     "Stop": [
       {
-        "command": "bash ~/.cursor-light/claude-code/hook-stop.sh",
+        "command": "bash ${DEST}/claude-code/hook-stop.sh",
         "matcher": ""
       }
     ],
     "postToolUseFailure": [
       {
-        "command": "bash ~/.cursor-light/claude-code/hook-denied.sh",
+        "command": "bash ${DEST}/claude-code/hook-denied.sh",
         "matcher": ""
       }
     ],
     "SessionEnd": [
       {
-        "command": "bash ~/.cursor-light/claude-code/hook-idle.sh",
+        "command": "bash ${DEST}/claude-code/hook-idle.sh",
         "matcher": ""
       }
     ]
   }
 }
-EOF
+HOOKEOF
+)
+
+mkdir -p "$CLAUDE_DIR"
+if [[ -f "$SETTINGS_JSON" ]]; then
+  echo "[!] $SETTINGS_JSON 已存在，请手动合并以下 hooks 配置："
+  echo ""
+  echo "$HOOK_CONFIG"
+else
+  echo "$HOOK_CONFIG" >"$SETTINGS_JSON"
+  echo "[OK] 已写入 $SETTINGS_JSON"
+fi
 
 echo ""
 echo "完成。请重启 Claude Code 使 hooks 生效。"

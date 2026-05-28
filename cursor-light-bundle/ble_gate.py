@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """原子判断是否需要向 BLE 发 mode，避免并行 Hook 重复扫描。"""
-import fcntl
 import json
+import os
 import sys
 import time
 from pathlib import Path
@@ -18,6 +18,26 @@ DEBOUNCE_MS = {
     "error": 3000,
     "green": 3000,
 }
+
+
+def _acquire_lock(lock_fp) -> None:
+    """跨平台排他文件锁。"""
+    if sys.platform == "win32":
+        import msvcrt
+        msvcrt.locking(lock_fp.fileno(), msvcrt.LK_LOCK, 1)
+    else:
+        import fcntl
+        fcntl.flock(lock_fp, fcntl.LOCK_EX)
+
+
+def _release_lock(lock_fp) -> None:
+    """跨平台解锁。"""
+    if sys.platform == "win32":
+        import msvcrt
+        msvcrt.locking(lock_fp.fileno(), msvcrt.LK_UNLCK, 1)
+    else:
+        import fcntl
+        fcntl.flock(lock_fp, fcntl.LOCK_UN)
 
 
 def load_state() -> dict:
@@ -43,7 +63,7 @@ def main() -> None:
 
     LOCK_PATH.parent.mkdir(parents=True, exist_ok=True)
     with open(LOCK_PATH, "w") as lock_fp:
-        fcntl.flock(lock_fp, fcntl.LOCK_EX)
+        _acquire_lock(lock_fp)
         data = load_state()
         now_ms = int(time.time() * 1000)
         last_mode = str(data.get("last_mode", ""))
@@ -136,7 +156,7 @@ def main() -> None:
             save_state(data)
             print(f"no:{reason}")
 
-        fcntl.flock(lock_fp, fcntl.LOCK_UN)
+        _release_lock(lock_fp)
 
 
 if __name__ == "__main__":

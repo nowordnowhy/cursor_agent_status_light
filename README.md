@@ -447,7 +447,7 @@ py .\cursor_light_ble_enhanced.py success
 
 CursorLight 同样支持通过 Claude Code 的 Hook 系统实现自动灯效联动。
 
-### 13.1 安装
+### 13.1 macOS 安装
 
 ```bash
 mkdir -p ~/.cursor-light
@@ -457,53 +457,58 @@ chmod +x *.sh claude-code/*.sh
 bash install-claude-code.sh
 ```
 
-install-claude-code.sh 会自动复制核心脚本到 `~/.cursor-light/` 并安装 Python 依赖。
+install-claude-code.sh 会自动复制核心脚本到 `~/.cursor-light/`，安装 Python 依赖，并写入 `~/.claude/settings.json`（如已存在则打印合并提示）。
 
-### 13.2 配置 Hooks
+### 13.2 Windows 安装
+
+**前提：** 需要安装 Git Bash 和 Python 3。
+
+```powershell
+# PowerShell
+New-Item -ItemType Directory -Force "$env:USERPROFILE\.cursor-light"
+Expand-Archive "$env:USERPROFILE\Downloads\cursor-light-bundle.zip" "$env:USERPROFILE\.cursor-light" -Force
+Set-Location "$env:USERPROFILE\.cursor-light"
+py -3 install-claude-code.py
+```
+
+install-claude-code.py 会自动复制脚本、安装 bleak、生成 `~/.claude/settings.json`。
+
+### 13.3 配置 Hooks
 
 Claude Code 的 hooks 配置支持两个级别：
 
 - **用户级** `~/.claude/settings.json` — 全局生效
 - **项目级** `.claude/settings.json` — 仅当前项目生效
 
-安装脚本会自动输出配置片段，复制到对应文件即可。也可参考 `claude-code/settings.json.snippet`。
+安装脚本会自动生成并写入配置。手动参考文件：`claude-code/settings.mac.json.snippet` / `claude-code/settings.win.json.snippet`。
 
-推荐配置：
+**Windows 注意：** settings.json 中的命令路径必须用 Git Bash 格式（正斜杠），例如：
 
 ```json
 {
   "hooks": {
     "UserPromptSubmit": [
-      { "command": "bash ~/.cursor-light/claude-code/hook-turn-start.sh" }
-    ],
-    "beforeToolUse": [
-      { "command": "bash ~/.cursor-light/claude-code/hook-busy.sh" },
-      { "command": "bash ~/.cursor-light/claude-code/hook-await-user.sh", "matcher": "AskUserQuestion" }
-    ],
-    "Stop": [
-      { "command": "bash ~/.cursor-light/claude-code/hook-stop.sh" }
-    ],
-    "postToolUseFailure": [
-      { "command": "bash ~/.cursor-light/claude-code/hook-denied.sh" }
-    ],
-    "SessionEnd": [
-      { "command": "bash ~/.cursor-light/claude-code/hook-idle.sh" }
+      { "command": "bash C:/Users/xx/.cursor-light/claude-code/hook-turn-start.sh" }
     ]
   }
 }
 ```
 
-### 13.3 自检
+### 13.4 自检
 
+macOS：
 ```bash
 cd ~/.cursor-light
 python3 cursor_light_ble_enhanced.py green
-python3 cursor_light_ble_enhanced.py thinking
-python3 cursor_light_ble_enhanced.py busy
-python3 cursor_light_ble_enhanced.py success
 ```
 
-### 13.4 Claude Code 状态映射
+Windows PowerShell：
+```powershell
+cd "$env:USERPROFILE\.cursor-light"
+py -3 cursor_light_ble_enhanced.py green
+```
+
+### 13.5 Claude Code 状态映射
 
 | Claude Code 事件 | 灯效 |
 |---|---|
@@ -514,6 +519,16 @@ python3 cursor_light_ble_enhanced.py success
 | Stop error/aborted（失败） | `error` — 红灯快闪 |
 | postToolUseFailure（工具失败） | `error` — 红灯快闪 |
 | SessionEnd（会话结束） | `green` — 绿灯常亮 |
+
+### 13.6 平台差异
+
+| | macOS | Windows |
+|---|---|---|
+| 安装脚本 | `install-claude-code.sh` | `install-claude-code.py` (PowerShell + Python) |
+| 配置路径 | `~/.claude/settings.json` | `%USERPROFILE%\.claude\settings.json` |
+| 脚本路径 | `~/.cursor-light/` | `C:/Users/<name>/.cursor-light/` |
+| 文件锁 | `fcntl` (内核原生) | `msvcrt` (Python 模拟) |
+| Shell | bash (系统自带) | Git Bash (需额外安装) |
 
 注意：Claude Code 版使用简化的状态机，不含 Cursor 的 Plan/Build 等待检测。所有工具失败统一映射为 `error`。
 
@@ -1128,7 +1143,7 @@ py .\cursor_light_ble_enhanced.py success
 
 CursorLight also works with Claude Code's Hook system for automatic light effects.
 
-### 13.1 Install
+### 13.1 macOS Install
 
 ```bash
 mkdir -p ~/.cursor-light
@@ -1138,53 +1153,58 @@ chmod +x *.sh claude-code/*.sh
 bash install-claude-code.sh
 ```
 
-The install script copies core scripts to `~/.cursor-light/` and installs Python dependencies.
+The install script copies core scripts to `~/.cursor-light/`, installs Python dependencies, and writes `~/.claude/settings.json` (or prints merge instructions if it already exists).
 
-### 13.2 Configure Hooks
+### 13.2 Windows Install
+
+**Prerequisites:** Git Bash and Python 3 must be installed.
+
+```powershell
+# PowerShell
+New-Item -ItemType Directory -Force "$env:USERPROFILE\.cursor-light"
+Expand-Archive "$env:USERPROFILE\Downloads\cursor-light-bundle.zip" "$env:USERPROFILE\.cursor-light" -Force
+Set-Location "$env:USERPROFILE\.cursor-light"
+py -3 install-claude-code.py
+```
+
+install-claude-code.py copies scripts, installs bleak, and generates `~/.claude/settings.json`.
+
+### 13.3 Configure Hooks
 
 Claude Code hooks can be set at two levels:
 
 - **User-level** `~/.claude/settings.json` — applies globally
 - **Project-level** `.claude/settings.json` — current project only
 
-The install script prints the configuration snippet; also see `claude-code/settings.json.snippet`.
+The install script auto-generates and writes the config. Manual reference files: `claude-code/settings.mac.json.snippet` / `claude-code/settings.win.json.snippet`.
 
-Recommended config:
+**Windows note:** Command paths in settings.json must use Git Bash format (forward slashes), e.g.:
 
 ```json
 {
   "hooks": {
     "UserPromptSubmit": [
-      { "command": "bash ~/.cursor-light/claude-code/hook-turn-start.sh" }
-    ],
-    "beforeToolUse": [
-      { "command": "bash ~/.cursor-light/claude-code/hook-busy.sh" },
-      { "command": "bash ~/.cursor-light/claude-code/hook-await-user.sh", "matcher": "AskUserQuestion" }
-    ],
-    "Stop": [
-      { "command": "bash ~/.cursor-light/claude-code/hook-stop.sh" }
-    ],
-    "postToolUseFailure": [
-      { "command": "bash ~/.cursor-light/claude-code/hook-denied.sh" }
-    ],
-    "SessionEnd": [
-      { "command": "bash ~/.cursor-light/claude-code/hook-idle.sh" }
+      { "command": "bash C:/Users/xx/.cursor-light/claude-code/hook-turn-start.sh" }
     ]
   }
 }
 ```
 
-### 13.3 Self-test
+### 13.4 Self-test
 
+macOS:
 ```bash
 cd ~/.cursor-light
 python3 cursor_light_ble_enhanced.py green
-python3 cursor_light_ble_enhanced.py thinking
-python3 cursor_light_ble_enhanced.py busy
-python3 cursor_light_ble_enhanced.py success
 ```
 
-### 13.4 Claude Code State Mapping
+Windows PowerShell:
+```powershell
+cd "$env:USERPROFILE\.cursor-light"
+py -3 cursor_light_ble_enhanced.py green
+```
+
+### 13.5 Claude Code State Mapping
 
 | Claude Code Event | Light Effect |
 |---|---|
@@ -1195,6 +1215,16 @@ python3 cursor_light_ble_enhanced.py success
 | Stop error/aborted (task failed) | `error` — red fast blink |
 | postToolUseFailure (tool failed) | `error` — red fast blink |
 | SessionEnd (session ends) | `green` — green solid |
+
+### 13.6 Platform Differences
+
+| | macOS | Windows |
+|---|---|---|
+| Install script | `install-claude-code.sh` | `install-claude-code.py` (PowerShell + Python) |
+| Config path | `~/.claude/settings.json` | `%USERPROFILE%\.claude\settings.json` |
+| Script path | `~/.cursor-light/` | `C:/Users/<name>/.cursor-light/` |
+| File lock | `fcntl` (kernel native) | `msvcrt` (Python emulation) |
+| Shell | bash (built-in) | Git Bash (must install separately) |
 
 Note: The Claude Code path uses a simplified state machine without Cursor's Plan/Build detection. All tool failures map to `error`.
 

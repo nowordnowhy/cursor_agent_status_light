@@ -1,36 +1,37 @@
 {
+  "_comment": "参考 settings.mac.json.snippet (macOS) 或 settings.win.json.snippet (Windows)。推荐直接运行 install-claude-code.sh / install-claude-code.py 自动生成正确路径。",
   "hooks": {
     "UserPromptSubmit": [
       {
-        "command": "bash ~/.cursor-light/claude-code/hook-turn-start.sh",
+        "command": "bash <安装路径>/claude-code/hook-turn-start.sh",
         "matcher": ""
       }
     ],
     "beforeToolUse": [
       {
-        "command": "bash ~/.cursor-light/claude-code/hook-busy.sh",
+        "command": "bash <安装路径>/claude-code/hook-busy.sh",
         "matcher": ""
       },
       {
-        "command": "bash ~/.cursor-light/claude-code/hook-await-user.sh",
+        "command": "bash <安装路径>/claude-code/hook-await-user.sh",
         "matcher": "AskUserQuestion"
       }
     ],
     "Stop": [
       {
-        "command": "bash ~/.cursor-light/claude-code/hook-stop.sh",
+        "command": "bash <安装路径>/claude-code/hook-stop.sh",
         "matcher": ""
       }
     ],
     "postToolUseFailure": [
       {
-        "command": "bash ~/.cursor-light/claude-code/hook-denied.sh",
+        "command": "bash <安装路径>/claude-code/hook-denied.sh",
         "matcher": ""
       }
     ],
     "SessionEnd": [
       {
-        "command": "bash ~/.cursor-light/claude-code/hook-idle.sh",
+        "command": "bash <安装路径>/claude-code/hook-idle.sh",
         "matcher": ""
       }
     ]
