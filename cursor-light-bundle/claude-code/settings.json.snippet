@@ -1,0 +1,38 @@
+{
+  "hooks": {
+    "UserPromptSubmit": [
+      {
+        "command": "bash ~/.cursor-light/claude-code/hook-turn-start.sh",
+        "matcher": ""
+      }
+    ],
+    "beforeToolUse": [
+      {
+        "command": "bash ~/.cursor-light/claude-code/hook-busy.sh",
+        "matcher": ""
+      },
+      {
+        "command": "bash ~/.cursor-light/claude-code/hook-await-user.sh",
+        "matcher": "AskUserQuestion"
+      }
+    ],
+    "Stop": [
+      {
+        "command": "bash ~/.cursor-light/claude-code/hook-stop.sh",
+        "matcher": ""
+      }
+    ],
+    "postToolUseFailure": [
+      {
+        "command": "bash ~/.cursor-light/claude-code/hook-denied.sh",
+        "matcher": ""
+      }
+    ],
+    "SessionEnd": [
+      {
+        "command": "bash ~/.cursor-light/claude-code/hook-idle.sh",
+        "matcher": ""
+      }
+    ]
+  }
+}

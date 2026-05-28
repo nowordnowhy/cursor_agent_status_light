@@ -443,7 +443,83 @@ py .\cursor_light_ble_enhanced.py success
 
 ---
 
-## 13. 推荐状态映射
+## 13. Claude Code 集成
+
+CursorLight 同样支持通过 Claude Code 的 Hook 系统实现自动灯效联动。
+
+### 13.1 安装
+
+```bash
+mkdir -p ~/.cursor-light
+cd ~/.cursor-light
+unzip ~/Downloads/cursor-light-bundle.zip
+chmod +x *.sh claude-code/*.sh
+bash install-claude-code.sh
+```
+
+install-claude-code.sh 会自动复制核心脚本到 `~/.cursor-light/` 并安装 Python 依赖。
+
+### 13.2 配置 Hooks
+
+Claude Code 的 hooks 配置支持两个级别：
+
+- **用户级** `~/.claude/settings.json` — 全局生效
+- **项目级** `.claude/settings.json` — 仅当前项目生效
+
+安装脚本会自动输出配置片段，复制到对应文件即可。也可参考 `claude-code/settings.json.snippet`。
+
+推荐配置：
+
+```json
+{
+  "hooks": {
+    "UserPromptSubmit": [
+      { "command": "bash ~/.cursor-light/claude-code/hook-turn-start.sh" }
+    ],
+    "beforeToolUse": [
+      { "command": "bash ~/.cursor-light/claude-code/hook-busy.sh" },
+      { "command": "bash ~/.cursor-light/claude-code/hook-await-user.sh", "matcher": "AskUserQuestion" }
+    ],
+    "Stop": [
+      { "command": "bash ~/.cursor-light/claude-code/hook-stop.sh" }
+    ],
+    "postToolUseFailure": [
+      { "command": "bash ~/.cursor-light/claude-code/hook-denied.sh" }
+    ],
+    "SessionEnd": [
+      { "command": "bash ~/.cursor-light/claude-code/hook-idle.sh" }
+    ]
+  }
+}
+```
+
+### 13.3 自检
+
+```bash
+cd ~/.cursor-light
+python3 cursor_light_ble_enhanced.py green
+python3 cursor_light_ble_enhanced.py thinking
+python3 cursor_light_ble_enhanced.py busy
+python3 cursor_light_ble_enhanced.py success
+```
+
+### 13.4 Claude Code 状态映射
+
+| Claude Code 事件 | 灯效 |
+|---|---|
+| UserPromptSubmit（用户提交 Prompt） | `thinking` — 跑马灯 |
+| beforeToolUse（开始执行工具） | `busy` — 黄灯慢闪 |
+| AskUserQuestion（等待用户选择） | `alarm` — 警灯 |
+| Stop completed（任务完成） | `success` — 绿灯常亮 |
+| Stop error/aborted（失败） | `error` — 红灯快闪 |
+| postToolUseFailure（工具失败） | `error` — 红灯快闪 |
+| SessionEnd（会话结束） | `green` — 绿灯常亮 |
+
+注意：Claude Code 版使用简化的状态机，不含 Cursor 的 Plan/Build 等待检测。所有工具失败统一映射为 `error`。
+
+---
+
+## 14. 推荐状态映射
 
 | Cursor / 开发场景 | 推荐 mode |
 |---|---|
@@ -466,7 +542,7 @@ py .\cursor_light_ble_enhanced.py success
 
 ---
 
-## 14. 日志与调试
+## 15. 日志与调试
 
 macOS：
 
@@ -493,7 +569,7 @@ Get-Content "$env:USERPROFILE\.cursor\hooks\cursor-light\ble.log" -Wait
 
 ---
 
-## 15. 常见问题
+## 16. 常见问题
 
 ### Arduino IDE 搜不到 ESP32C3 Dev Module
 
@@ -575,7 +651,7 @@ py -3
 
 ---
 
-## 16. 卸载
+## 17. 卸载
 
 macOS：
 
@@ -595,7 +671,7 @@ notepad "$env:USERPROFILE\.cursor\hooks.json"
 
 ---
 
-## 17. 参考链接
+## 18. 参考链接
 
 - Arduino IDE 下载页：`https://www.arduino.cc/en/software`
 - Arduino IDE 安装说明：`https://support.arduino.cc/hc/en-us/articles/360019833020-Download-and-install-Arduino-IDE`
@@ -1048,7 +1124,83 @@ py .\cursor_light_ble_enhanced.py success
 
 ---
 
-## 13. Recommended State Mapping
+## 13. Claude Code Integration
+
+CursorLight also works with Claude Code's Hook system for automatic light effects.
+
+### 13.1 Install
+
+```bash
+mkdir -p ~/.cursor-light
+cd ~/.cursor-light
+unzip ~/Downloads/cursor-light-bundle.zip
+chmod +x *.sh claude-code/*.sh
+bash install-claude-code.sh
+```
+
+The install script copies core scripts to `~/.cursor-light/` and installs Python dependencies.
+
+### 13.2 Configure Hooks
+
+Claude Code hooks can be set at two levels:
+
+- **User-level** `~/.claude/settings.json` — applies globally
+- **Project-level** `.claude/settings.json` — current project only
+
+The install script prints the configuration snippet; also see `claude-code/settings.json.snippet`.
+
+Recommended config:
+
+```json
+{
+  "hooks": {
+    "UserPromptSubmit": [
+      { "command": "bash ~/.cursor-light/claude-code/hook-turn-start.sh" }
+    ],
+    "beforeToolUse": [
+      { "command": "bash ~/.cursor-light/claude-code/hook-busy.sh" },
+      { "command": "bash ~/.cursor-light/claude-code/hook-await-user.sh", "matcher": "AskUserQuestion" }
+    ],
+    "Stop": [
+      { "command": "bash ~/.cursor-light/claude-code/hook-stop.sh" }
+    ],
+    "postToolUseFailure": [
+      { "command": "bash ~/.cursor-light/claude-code/hook-denied.sh" }
+    ],
+    "SessionEnd": [
+      { "command": "bash ~/.cursor-light/claude-code/hook-idle.sh" }
+    ]
+  }
+}
+```
+
+### 13.3 Self-test
+
+```bash
+cd ~/.cursor-light
+python3 cursor_light_ble_enhanced.py green
+python3 cursor_light_ble_enhanced.py thinking
+python3 cursor_light_ble_enhanced.py busy
+python3 cursor_light_ble_enhanced.py success
+```
+
+### 13.4 Claude Code State Mapping
+
+| Claude Code Event | Light Effect |
+|---|---|
+| UserPromptSubmit (user submits prompt) | `thinking` — chasing lights |
+| beforeToolUse (tool starts executing) | `busy` — yellow slow blink |
+| AskUserQuestion (waiting for user choice) | `alarm` — warning flash |
+| Stop completed (task finished) | `success` — green solid |
+| Stop error/aborted (task failed) | `error` — red fast blink |
+| postToolUseFailure (tool failed) | `error` — red fast blink |
+| SessionEnd (session ends) | `green` — green solid |
+
+Note: The Claude Code path uses a simplified state machine without Cursor's Plan/Build detection. All tool failures map to `error`.
+
+---
+
+## 14. Recommended State Mapping
 
 | Cursor / dev scenario | Suggested mode |
 |---|---|
@@ -1071,7 +1223,7 @@ Critical: busy -> alarm
 
 ---
 
-## 14. Logs and Debugging
+## 15. Logs and Debugging
 
 macOS:
 
@@ -1098,7 +1250,7 @@ Common issues:
 
 ---
 
-## 15. FAQ
+## 16. FAQ
 
 ### Arduino IDE: cannot find ESP32C3 Dev Module
 
@@ -1180,7 +1332,7 @@ py -3
 
 ---
 
-## 16. Uninstall
+## 17. Uninstall
 
 macOS:
 
@@ -1200,7 +1352,7 @@ Remove cursor-light entries from `hooks.json`, then restart Cursor.
 
 ---
 
-## 17. References
+## 18. References
 
 - Arduino IDE download: `https://www.arduino.cc/en/software`
 - Arduino IDE install guide: `https://support.arduino.cc/hc/en-us/articles/360019833020-Download-and-install-Arduino-IDE`
